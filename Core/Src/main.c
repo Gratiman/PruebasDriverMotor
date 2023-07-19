@@ -100,9 +100,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
-   HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
-   HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+   HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
+   HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
  //  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1); //Estado inicial del pin de selección para la comunicación SPI
 
    uint8_t comand[]={0};
@@ -151,6 +151,8 @@ int main(void)
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
 
+   recibir ();
+
    //Valor de regulación de corriente de torque
    direction[2] = 0x09;
    comand [2] = t_val;
@@ -159,6 +161,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    //Maximum fast decay time (TOFF_FAST) and the maximum fall step time (FALL_STEP) used by the current control system
    direction[2] = 0x0E;
@@ -168,6 +171,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    //Mínimo tiempo encendido, en ambos casos se configura con el máximo permitido.
    direction[2] = 0x0F;
@@ -177,6 +181,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    //Mínimo tiempo apagado
    direction[2] = 0x10;
@@ -186,6 +191,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    //Valor de umbral de sobre corriente
    direction[2] = 0x13;
@@ -195,6 +201,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    // Configuración del modo de paso
    direction[2] = 0x18;
@@ -204,6 +211,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    //Habilitación de alarmas
    direction[2] = 0x17;
@@ -213,6 +221,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
    //Configuraciones del registro CONFIG
    direction[2] = 0x16;
@@ -222,6 +231,7 @@ int main(void)
    HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
    HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+   recibir ();
 
 
 
@@ -251,7 +261,8 @@ int main(void)
 
  	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
 
- 	//  recibir();
+ 	 recibir ();
+
  	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
  	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
 
@@ -268,7 +279,7 @@ int main(void)
  	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
  	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
 
- 	//  recibir();
+ 	  recibir ();
  	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
  	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
 
@@ -460,7 +471,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void recibir ()
+{
+	  //Escuchar respuesta del driver:
+	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
+	  estado_rx = HAL_SPI_Receive(&hspi1, rx_buffer, 1, 1000);
+	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+}
 /* USER CODE END 4 */
 
 /**
