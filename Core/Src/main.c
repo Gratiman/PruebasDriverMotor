@@ -46,7 +46,9 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 uint8_t estado_rx;
+uint8_t estado_spi_tx;
 uint8_t rx_buffer[]={0};
+uint8_t get_status[]={0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,8 +103,8 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
-   HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
-   HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
+  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
+  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
  //  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1); //Estado inicial del pin de selección para la comunicación SPI
 
    uint8_t comand[]={0};
@@ -143,7 +145,7 @@ int main(void)
 
    //Configuraciones de los modos básicos en los registros esenciales:
    //Posición electrica:
-   direction[2] = 0x02;
+   direction[3] = 0x02;
    comand [2] = el_pos;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -155,7 +157,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Valor de regulación de corriente de torque
-   direction[2] = 0x09;
+   direction[3] = 0x09;
    comand [2] = t_val;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -167,7 +169,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Maximum fast decay time (TOFF_FAST) and the maximum fall step time (FALL_STEP) used by the current control system
-   direction[2] = 0x0E;
+   direction[3] = 0x0E;
    comand [2] = t_fast;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -179,7 +181,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Mínimo tiempo encendido, en ambos casos se configura con el máximo permitido.
-   direction[2] = 0x0F;
+   direction[3] = 0x0F;
    comand [2] = ton_min;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -191,7 +193,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Mínimo tiempo apagado
-   direction[2] = 0x10;
+   direction[3] = 0x10;
    comand [2] = toff_min;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -203,7 +205,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Valor de umbral de sobre corriente
-   direction[2] = 0x13;
+   direction[3] = 0x13;
    comand [2] = ocd_th;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -215,7 +217,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    // Configuración del modo de paso
-   direction[2] = 0x18;
+   direction[3] = 0x18;
    comand [2] = config_reg;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -227,7 +229,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Habilitación de alarmas
-   direction[2] = 0x17;
+   direction[3] = 0x17;
    comand [2] = alarm_en;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -239,7 +241,7 @@ int main(void)
    sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
    //Configuraciones del registro CONFIG
-   direction[2] = 0x16;
+   direction[3] = 0x16;
    comand [2] = step_mode;
    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
    estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
@@ -253,11 +255,11 @@ int main(void)
 
    while (1)
    {
- 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
- 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
- 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+ 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
 
- 	  direction[2] = (move | fwd);
+ 	  direction[3] = (move | fwd);
  	  comand [2] = pasos >> 16;
  	  comand [1] = pasos >> 8;
  	  comand [0] = pasos;
@@ -267,47 +269,43 @@ int main(void)
  	  //Se envía la dirección o registro a escribirse
  	  estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) direction, 1, 100);
  	  //Encender LED para depurar
- 	  if (estado_spi_tx==HAL_OK) HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
- 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+ 	  if (estado_spi_tx==HAL_OK) HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
+ 	  else HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
  	  //Se envía el comando
  	  estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
-
- 	  if (estado_spi_tx==HAL_OK) HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
- 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
-
  	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
+ 	  if (estado_spi_tx==HAL_OK) HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
+ 	  else HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
 
- 	 recibir ();
- 	   estado_rx = HAL_UART_Transmit(&huart1, rx_buffer, 1, 100);
- 	   sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
+ 	  recibir ();
+ 	  estado_rx = HAL_UART_Transmit(&huart1, rx_buffer, 1, 100);
+ 	  sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
- 	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
- 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
 
  	  HAL_Delay (5000);
- 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
- 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
- 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
+ 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
 
  	  //Detener motor
  	  comand [0] = 0xB0;
  	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
  	  estado_spi_tx= HAL_SPI_Transmit(&hspi1, (uint8_t*) comand, 3, 100);
- 	  if (estado_spi_tx==HAL_OK) HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
- 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+ 	  if (estado_spi_tx==HAL_OK) HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
+ 	  else HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
  	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
 
  	  recibir ();
- 	   estado_rx = HAL_UART_Transmit(&huart1, rx_buffer, 1, 100);
- 	   sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
+ 	  estado_rx = HAL_UART_Transmit(&huart1, rx_buffer, 1, 100);
+ 	  sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
- 	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
- 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+ 	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
+ 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
 
  	  HAL_Delay (1000);
- 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
- 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
- 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
+ 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -494,10 +492,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void recibir ()
 {
-	  //Escuchar respuesta del driver:
-	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
-	  estado_rx = HAL_SPI_Receive(&hspi1, rx_buffer, 1, 1000);
-	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
+	get_status[0] = 0b11010000;
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
+	estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) get_status, 1, 100);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
+	//Escuchar respuesta del driver:
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
+	estado_rx = HAL_SPI_Receive(&hspi1, rx_buffer, 1, 1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
 }
 /* USER CODE END 4 */
 
