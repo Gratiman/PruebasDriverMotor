@@ -256,12 +256,7 @@ int main(void)
 
    while (1)
    {
- 	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
- 	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
- 	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
- 	  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
-
- 	  direction[3] = (move | fwd);
+	  direction[3] = (move | fwd);
  	  comand [2] = pasos >> 16;
  	  comand [1] = pasos >> 8;
  	  comand [0] = pasos;
@@ -282,13 +277,15 @@ int main(void)
  	  recibir ();
  	  estado_rx = HAL_UART_Transmit(&huart1, rx_buffer, 1, 100);
  	  sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
-
-
+ 	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
+ 	  else HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 1);
  	  HAL_Delay (5000);
+
  	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
  	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
+ 	  HAL_Delay (5000);
 
  	  //Detener motor
  	  comand [0] = 0xB0;
@@ -301,15 +298,15 @@ int main(void)
  	  recibir ();
  	  estado_rx = HAL_UART_Transmit(&huart1, rx_buffer, 1, 100);
  	  sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
-
  	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
  	  else HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 1);
-
  	  HAL_Delay (1000);
+
  	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
  	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
+ 	  HAL_Delay (1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
