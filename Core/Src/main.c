@@ -105,6 +105,7 @@ int main(void)
   HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
   HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
   HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
+  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
  //  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1); //Estado inicial del pin de selección para la comunicación SPI
 
    uint8_t comand[]={0};
@@ -258,6 +259,7 @@ int main(void)
  	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
 
  	  direction[3] = (move | fwd);
  	  comand [2] = pasos >> 16;
@@ -286,6 +288,7 @@ int main(void)
  	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
  	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
 
  	  //Detener motor
  	  comand [0] = 0xB0;
@@ -300,12 +303,13 @@ int main(void)
  	  sprintf (rx_buffer, "Valor recibido: %u,\n\r", estado_rx);
 
  	  if (estado_rx==HAL_OK) HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 1);
- 	  else HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 1);
+ 	  else HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 1);
 
  	  HAL_Delay (1000);
  	  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
  	  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
  	  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
+ 	  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
