@@ -48,9 +48,9 @@ UART_HandleTypeDef huart1;
 uint8_t estado_rx;
 uint8_t estado_spi_tx;
 uint8_t rx_buffer[]={0};
-uint8_t get_status[]={0};
+uint8_t get_st[]={0};
 
-uint8_t param[4]={0};
+uint8_t param[1]={0};
 uint8_t value[3]={0};
 /* USER CODE END PV */
 
@@ -60,7 +60,8 @@ static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void recibir ();
+uint8_t* recibir ();
+uint8_t* get_status();
 void enviar (uint8_t* param, uint8_t* value, uint16_t nbp, uint16_t nbv);
 /* USER CODE END PFP */
 
@@ -105,14 +106,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_GPIO_WritePin(LED_READY_GPIO_Port, LED_READY_Pin, 0);
-  HAL_GPIO_WritePin(LED_BUSY_GPIO_Port, LED_BUSY_Pin, 0);
-  HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
-  HAL_GPIO_WritePin(LED_SPARE_GPIO_Port, LED_SPARE_Pin, 0);
-  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1); //Estado inicial del pin de selección para la comunicación SPI
-
-
-
    uint32_t pasos = 60000;
    uint8_t fwd = 1;
    //uint8_t move = 0x64;
@@ -157,42 +150,51 @@ int main(void)
  						  vcc_val | \
  						  oc_sd | uvloval | tq_reg | tsw | pred_en);
 
-
   // uint8_t estado_spi_tx;
 
-
    //Configuraciones de los modos básicos en los registros:
-   //Posición electrica:
+
+   // 1. Posición absoluta:
+   param[0] = 0x01;
+   value[0] = 0x00;
+   enviar (param, value, 1,1);
+
+   // 2. Posición electrica:
    param[0] = (0x00|0x02);
    value[0] = el_pos;
    enviar (param, value, 1, 1);
 
-   //Aceleración
+   // 3. Marca
+   param[0] = 0x03;
+   value[3] = 0x00>>16;
+   enviar (param, value, 1, 1);
+
+   // 4. Aceleración
    param[0] = 0x05;
    value[0] = acc;
    enviar (param, value, 1, 2);
 
-   //Desaceleración
+   // 5. Desaceleración
    param[0] = 0x06;
    value[0] = dec;
    enviar (param, value, 1, 2);
 
-   //Velocidad mínima
+   // 6. Velocidad mínima
    param[0] = 0x07;
    value[0] = min_speed;
    enviar (param, value, 1, 1);
 
-   //Vel máxima
+   // 7. Vel máxima
    param[0] = 0x08;
    value[0] = max_speed;
    enviar (param, value, 1, 2);
 
-   //Full-step speed
+   // 8. Full-step speed
    param[0] = 0x15;
    value[0] = fs_spd;
    enviar (param, value, 1, 2);
 
-   //T_VALs
+   // 9. T_VALs
    param[0] = 0x09;
    value[0] = tval_hold;
    enviar (param, value, 1, 1);
@@ -209,53 +211,50 @@ int main(void)
    value[0] = tval_dec;
    enviar (param, value, 1, 1);
 
-   //Maximum fast decay time (TOFF_FAST) and the maximum fall step time (FALL_STEP) used by the current control system
+   // 10. Maximum fast decay time (TOFF_FAST) and the maximum fall step time (FALL_STEP) used by the current control system
    param[0] = 0x0E;
    value[0] = t_fast;
    enviar (param, value, 1, 1);
 
-   //Mínimo tiempo encendido, en ambos casos se configura con el máximo permitido.
+   // 11. Mínimo tiempo encendido, en ambos casos se configura con el máximo permitido.
    param[0] = 0x0F;
    value[0] = ton_min;
    enviar (param, value, 1, 1);
 
-   //Mínimo tiempo apagado
+   // 12. Mínimo tiempo apagado
    param[0] = 0x10;
    value[0] = toff_min;
    enviar (param, value, 1, 1);
 
-   //Valor de umbral de sobre corriente
+   // 13. Valor de umbral de sobre corriente
    param[0] = 0x13;
    value[0] = ocd_th;
    enviar (param, value, 1, 1);
 
-   //Step mode
+   // 14. Step mode
     param[0] = 0x16;
     value[0] = step_mode;
     enviar (param, value, 1, 1);
 
-    //Habilitación de alarmas
+    // 15. Habilitación de alarmas
     param[0] = 0x17;
     value[0] = alarm_en;
     enviar (param, value, 1, 1);
 
-   // GATECFG1
+   // 16. GATECFG1
    param[0] = 0x18;
    value[0] = gatecfg1;
    enviar (param, value, 1, 2);
 
-   // GATECFG2
+   // 17. GATECFG2
    param[0] = 0x19;
    value[0] = gatecfg2;
    enviar (param, value, 1, 1);
 
-   // Config
+   // 18. Config
    param[0] = 0x1A;
    value[0] = config;
    enviar (param, value, 1, 2);
-
-
-
 
    while (1)
    {
@@ -269,6 +268,16 @@ int main(void)
  	  speed [2] = pasos;
 
  	  enviar (direction, speed, 1, 3);
+
+
+ 	  //GetParam Registro Config
+ 	   param[0] = (0b00100000 | 0x1A);
+ 	   value[0] = config;
+ 	   enviar (param, value, 1, 2);
+ 	   recibir ();
+ 	   HAL_Delay(400);
+ 	   get_status();
+
 // 	  // Mover motor hacia adelante por 5s
 // 	  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
 // 	  //Se envía la dirección: 1 FW, 0 BW
@@ -494,17 +503,24 @@ void enviar (uint8_t* param, uint8_t* value, uint16_t nbp, uint16_t nbv)
 	   HAL_SPI_Transmit(&hspi1, (uint8_t*) value, nbv, 500);
 	   HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
 }
-void recibir ()
+uint8_t* recibir ()
 {
-	get_status[0] = 0b11010000;
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
-	estado_spi_tx = HAL_SPI_Transmit(&hspi1, (uint8_t*) get_status, 1, 500);
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
-	//Escuchar respuesta del driver:
+
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
 	estado_rx = HAL_SPI_Receive(&hspi1, rx_buffer, 3, 500);
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
+	return (uint8_t*) rx_buffer;
 }
+
+uint8_t* get_status()
+{
+	get_st[0] = 0b11010000;
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 0);
+	estado_rx = HAL_SPI_Receive(&hspi1, rx_buffer, 3, 500);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, 1);
+	return (uint8_t*) rx_buffer;
+}
+
 /* USER CODE END 4 */
 
 /**
