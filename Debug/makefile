@@ -52,6 +52,9 @@ default.size.stdout \
 OBJDUMP_LIST += \
 PruMoPaP6482_2.list \
 
+OBJCOPY_HEX += \
+PruMoPaP6482_2.hex \
+
 
 # All Target
 all: main-build
@@ -75,12 +78,17 @@ PruMoPaP6482_2.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
+PruMoPaP6482_2.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "PruMoPaP6482_2.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) PruMoPaP6482_2.elf PruMoPaP6482_2.list PruMoPaP6482_2.map default.size.stdout
+	-$(RM) PruMoPaP6482_2.elf PruMoPaP6482_2.hex PruMoPaP6482_2.list PruMoPaP6482_2.map default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
